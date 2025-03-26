@@ -1,11 +1,13 @@
 {
-  "singleQuote": true,
+  "singleQuote": false,
   "semi": false,
   "tabWidth": 2,
   "printWidth": 100,
   "trailingComma": "all",
   "importOrder": [
-    "^(react/(.*)$)|^(react$)|^(react(.*)$)",
+    "^@heroui(.*)$",
+    "^(react/(.*)$)|^(react$)",
+    "^(react(.*)$)",
     "<THIRD_PARTY_MODULES>",
     "^types/(.*)$",
     "^constants/(.*)$",

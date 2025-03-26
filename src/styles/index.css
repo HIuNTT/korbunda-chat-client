@@ -1,1 +1,12 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Noto Sans", "Segoe UI", Roboto, Arial, Ubuntu,
+    "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+}
