@@ -1,9 +1,10 @@
 import { Controller, useFormContext } from "react-hook-form"
 
 import Input, { InputProps } from "./Input"
+import Radio, { RadioProps } from "./Radio"
 import Select, { SelectProps } from "./Select"
 
-type FieldProps = { name: string } & (InputProps | SelectProps)
+type FieldProps = { name: string } & (InputProps | SelectProps | RadioProps)
 
 export default function Field(props: FieldProps) {
   const { name, t } = props
@@ -20,8 +21,15 @@ export default function Field(props: FieldProps) {
           )}
           {t === "hide-input-error" && <Input {...field} {...props} />}
           {t === "select" && (
-            <Select {...field} {...props} isInvalid={invalid} errorMessage={error?.message} />
+            <Select {...field} isInvalid={invalid} {...props} errorMessage={error?.message} />
           )}
+          {t === "hide-select-error-message" && (
+            <Select {...field} isInvalid={invalid} {...props} />
+          )}
+          {t === "radio" ||
+            (t === "custom-radio" && (
+              <Radio {...field} {...props} errorMessage={error?.message} isInvalid={invalid} />
+            ))}
         </>
       )}
     />

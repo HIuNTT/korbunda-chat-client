@@ -6,11 +6,19 @@ import { FcGoogle } from "react-icons/fc"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 
+import { nav } from "constants/nav"
+
 import Field from "components/core/field"
 
 const formSchema = yup.object({
-  username: yup.string().required(),
-  password: yup.string().required(),
+  username: yup
+    .string()
+    .required("The email address or mobile number you entered isn't connected to an account."),
+  password: yup.string().when("username", {
+    is: (val: string) => !!val,
+    then: (schema) => schema.required("Please enter your password."),
+    otherwise: (schema) => schema.optional(),
+  }),
 })
 
 export default function LogIn() {
@@ -30,7 +38,7 @@ export default function LogIn() {
       >
         <CardBody className="p-4">
           <FormProvider {...methods}>
-            <form>
+            <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
               <div className="[&>div+div]:pt-3">
                 <Field
                   name="username"
@@ -66,7 +74,14 @@ export default function LogIn() {
           </div>
           <Divider className="my-5" />
           <div className="text-center">
-            <Button className="mb-2 mt-1" size="lg" radius="sm" color="secondary">
+            <Button
+              as={Link}
+              href={nav.AUTH + nav.SIGN_UP}
+              className="mb-2 mt-1"
+              size="lg"
+              radius="sm"
+              color="secondary"
+            >
               Create new account
             </Button>
           </div>
