@@ -1,23 +1,33 @@
-import { useState } from 'react'
+import { HeroUIProvider, ToastProvider } from "@heroui/react"
+
+import { Suspense } from "react"
+
+import { RouterProvider } from "react-router"
+
+import { QueryClientProvider } from "@tanstack/react-query"
+
+import { queryClient } from "configs/queryClient"
+import { router } from "configs/router"
+
+import LoadingPage from "components/common/LoadingPage"
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className="flex min-h-screen flex-col place-items-center justify-center text-center">
-      <h1 className="text-[3.2em]">Korbunda</h1>
-      <div className="p-8">
-        <button
-          className="cursor-pointer rounded-[8px] border-1 border-solid border-transparent bg-[#f9f9f9] px-[1.2em] py-[0.6em] text-[1em] font-medium transition-[border-color] duration-250 hover:border-[#646cff] focus-visible:border-4"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <HeroUIProvider navigate={router.navigate}>
+        <Suspense fallback={<LoadingPage />}>
+          <ToastProvider
+            toastProps={{
+              radius: "sm",
+              timeout: 3000,
+            }}
+            placement="bottom-left"
+            toastOffset={10}
+          />
+          <RouterProvider router={router} />
+        </Suspense>
+      </HeroUIProvider>
+    </QueryClientProvider>
   )
 }
 
