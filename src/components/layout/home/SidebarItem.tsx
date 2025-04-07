@@ -28,7 +28,7 @@ export default function SidebarItem({
         <div
           onClick={handleClick}
           className={cn(
-            "peer flex size-12 cursor-pointer items-center justify-center rounded-medium bg-background bg-cover bg-center transition-transform-colors hover:bg-primary hover:text-primary-foreground",
+            "peer flex size-10 cursor-pointer items-center justify-center rounded-medium bg-background bg-cover bg-center transition-transform-colors hover:bg-primary hover:text-primary-foreground",
             { "bg-primary text-primary-foreground": isActive },
             { "rounded-full": isRadiusFull },
           )}
