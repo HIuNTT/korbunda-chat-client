@@ -4,6 +4,7 @@ import { Suspense } from "react"
 
 import { RouterProvider } from "react-router"
 
+import { GoogleOAuthProvider } from "@react-oauth/google"
 import { QueryClientProvider } from "@tanstack/react-query"
 
 import { queryClient } from "configs/queryClient"
@@ -15,17 +16,18 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HeroUIProvider navigate={router.navigate}>
-        <Suspense fallback={<LoadingPage />}>
-          <ToastProvider
-            toastProps={{
-              radius: "sm",
-              timeout: 3000,
-            }}
-            placement="bottom-left"
-            toastOffset={10}
-          />
-          <RouterProvider router={router} />
-        </Suspense>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <Suspense fallback={<LoadingPage />}>
+            <ToastProvider
+              toastProps={{
+                radius: "sm",
+              }}
+              placement="bottom-left"
+              toastOffset={10}
+            />
+            <RouterProvider router={router} />
+          </Suspense>
+        </GoogleOAuthProvider>
       </HeroUIProvider>
     </QueryClientProvider>
   )

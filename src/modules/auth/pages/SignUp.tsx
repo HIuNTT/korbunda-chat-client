@@ -1,6 +1,19 @@
-import { Button, Card, CardBody, CardHeader, Divider, Link, cn } from "@heroui/react"
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Divider,
+  Link,
+  Modal,
+  ModalContent,
+  cn,
+  useDisclosure,
+} from "@heroui/react"
 
-import { FormProvider, useForm } from "react-hook-form"
+import { useState } from "react"
+
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form"
 
 import { yupResolver } from "@hookform/resolvers/yup"
 import dayjs from "dayjs"
@@ -11,27 +24,23 @@ import { nav } from "constants/nav"
 import Field from "components/core/field"
 
 import BirthdaySelect from "../components/BirthdaySelect"
+import OtpModal from "../components/OtpModal"
+import { SignUpAccountDto, useSignUpAccount } from "../services/signUp"
 
-interface FormSignUp {
-  firstName: string
-  surName: string
-  gender: string
+interface FormSignUp extends Omit<SignUpAccountDto, "dob"> {
   day: number
   month: number
   year: number
-  username: string
-  password: string
-  confirmPassword: string
 }
 
 const signupSchema = yup.object({
   firstName: yup.string().required("First name is required"),
-  surName: yup.string().required("Surname is required"),
+  lastName: yup.string().required("Surname is required"),
   gender: yup.string().required("Please choose a gender. You can change who can see this later."),
   day: yup.number().required(),
   month: yup.number().required(),
   year: yup.number().required(),
-  username: yup
+  identifier: yup
     .string()
     .required("You'll use this when you log in and if you ever need to reset your password")
     .test("is-email-or-phone", "Please enter a valid email address or phone number", (value) => {
@@ -47,22 +56,31 @@ const signupSchema = yup.object({
   password: yup
     .string()
     .required(
-      "Enter a combination of at least six numbers, letters and punctuation marks (such as ! and &)",
+      "Enter a combination of 8-20 characters, including at least one uppercase letter, one lowercase letter, one number, and one symbol (such as ! and &).",
     )
     .matches(
       // eslint-disable-next-line
-      /(?=(.*[0-9]))(?=.*[\!@#$%^&*()\\[\]{}\-_+=~|:;"'<>,./?])(?=.*[a-zA-Z])(?=(.*)).{6,}/,
-      "Enter a combination of at least six numbers, letters and punctuation marks (such as ! and &)",
+      /(?=(.*[0-9]))(?=.*[\!@#$%^&*()\\[\]{}\-_+=~|:;"'<>,./?])(?=.*[a-z])(?=.*[A-Z]).{8,20}$/,
+      "Enter a combination of 8-20 characters, including at least one uppercase letter, one lowercase letter, one number, and one symbol (such as ! and &).",
     ),
-  confirmPassword: yup
+  rePassword: yup
     .string()
     .required("Please re-enter your password")
     .oneOf([yup.ref("password")], "Passwords must match"),
 })
 
 export default function SignUp() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  const [verifiedData, setVerifiedData] = useState<string>("")
+
   const methods = useForm<FormSignUp>({
     defaultValues: {
+      firstName: "",
+      lastName: "",
+      gender: "",
+      identifier: "",
+      password: "",
+      rePassword: "",
       day: dayjs().date(),
       month: dayjs().month() + 1,
       year: dayjs().year(),
@@ -70,6 +88,21 @@ export default function SignUp() {
     resolver: yupResolver(signupSchema),
     mode: "all",
   })
+
+  const signUpAccount = useSignUpAccount()
+
+  const onSubmit: SubmitHandler<FormSignUp> = ({ day, month, year, ...data }) => {
+    const dob = dayjs(`${year}-${month}-${day}`).format("YYYY-MM-DD")
+    signUpAccount.mutateAsync(
+      { ...data, dob },
+      {
+        onSuccess(data) {
+          onOpen()
+          setVerifiedData(data.email || data.phoneNumber || "")
+        },
+      },
+    )
+  }
 
   return (
     <div className="py-10">
@@ -82,10 +115,10 @@ export default function SignUp() {
         <Divider />
         <CardBody className="p-4">
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
+            <form onSubmit={methods.handleSubmit(onSubmit)}>
               <div className="mb-4 grid grid-cols-2 gap-3">
                 <Field t="input" name="firstName" placeholder="First name" />
-                <Field t="input" name="surName" placeholder="Surname" />
+                <Field t="input" name="lastName" placeholder="Surname" />
               </div>
               <BirthdaySelect />
               <Field
@@ -104,26 +137,32 @@ export default function SignUp() {
                 classNames={{ label: "text-[13px]" }}
                 className="mb-4 gap-1"
                 options={[
-                  { label: "Female", value: "Female" },
-                  { label: "Male", value: "Male" },
-                  { label: "Other", value: "Other" },
+                  { label: "Female", value: "FEMALE" },
+                  { label: "Male", value: "MALE" },
+                  { label: "Other", value: "OTHER" },
                 ]}
               />
               <Field
                 className="mb-4"
                 t="input"
-                name="username"
+                name="identifier"
                 placeholder="Mobile number or email address"
               />
               <Field className="mb-4" t="password" name="password" placeholder="New password" />
               <Field
                 className="mb-4"
                 t="password"
-                name="confirmPassword"
+                name="rePassword"
                 placeholder="Confirm password"
               />
               <div className="text-center">
-                <Button type="submit" className="my-3 min-w-[50%]" radius="sm" color="secondary">
+                <Button
+                  type="submit"
+                  className="my-3 min-w-[50%]"
+                  radius="sm"
+                  color="secondary"
+                  isLoading={signUpAccount.isPending}
+                >
                   Sign Up
                 </Button>
               </div>
@@ -136,6 +175,17 @@ export default function SignUp() {
           </div>
         </CardBody>
       </Card>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        hideCloseButton
+        size="lg"
+        isDismissable={false}
+      >
+        <ModalContent>
+          {(onClose) => <OtpModal onClose={onClose} value={verifiedData} />}
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

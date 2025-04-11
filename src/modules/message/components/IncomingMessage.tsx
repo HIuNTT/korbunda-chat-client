@@ -16,7 +16,9 @@ export default function IncomingMessage() {
       <div className="break-words rounded-3xl bg-white px-3 py-2">
         Message cav cav ca vai vai vai vai vai vaiv vaiv viai iiii iii iiiii iiiii iii
       </div>
-      <div className="w-[84px]"></div>
+      <div>
+        <div className="flex w-[84px] flex-col"></div>
+      </div>
       <div className="grow basis-0"></div>
     </div>
   )

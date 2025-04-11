@@ -1,28 +1,82 @@
-import { Button, Card, CardBody, Divider, Link } from "@heroui/react"
+import { Button, Card, CardBody, Divider, Link, addToast } from "@heroui/react"
 
-import { FormProvider, useForm } from "react-hook-form"
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form"
 import { FcGoogle } from "react-icons/fc"
+import { useNavigate } from "react-router"
 
 import { yupResolver } from "@hookform/resolvers/yup"
+import { useGoogleLogin } from "@react-oauth/google"
 import * as yup from "yup"
 
 import { nav } from "constants/nav"
 
+import { useUserStore } from "store/user"
+
 import Field from "components/core/field"
 
+import { useLogin, useGoogleLogin as useMyGoogleLogin } from "../services/logIn"
+
 const formSchema = yup.object({
-  username: yup
+  identifier: yup
     .string()
     .required("The email address or mobile number you entered isn't connected to an account."),
-  password: yup.string().when("username", {
+  password: yup.string().when("identifier", {
     is: (val: string) => !!val,
     then: (schema) => schema.required("Please enter your password."),
     otherwise: (schema) => schema.optional(),
   }),
 })
 
+interface FormValues {
+  identifier: string
+  password?: string
+}
+
 export default function LogIn() {
-  const methods = useForm({ resolver: yupResolver(formSchema) })
+  const methods = useForm<FormValues>({
+    defaultValues: {
+      identifier: "",
+      password: "",
+    },
+    resolver: yupResolver(formSchema),
+  })
+
+  const navigate = useNavigate()
+
+  const { setToken } = useUserStore()
+  const googleLogin = useMyGoogleLogin()
+  const login = useLogin()
+
+  const handleGoogleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async ({ code }) => {
+      const { accessToken, refreshToken } = await googleLogin.mutateAsync({ code })
+      setToken({ accessToken, refreshToken })
+      navigate(nav.MESSAGE)
+    },
+    onError() {
+      addToast({
+        title: "Google login failed",
+        color: "danger",
+      })
+    },
+  })
+
+  const onSubmit: SubmitHandler<FormValues> = ({ identifier, password }) => {
+    login.mutate(
+      { identifier, password: password! },
+      {
+        onSuccess: ({ accessToken, refreshToken }) => {
+          setToken({ accessToken, refreshToken })
+          addToast({
+            title: "Login successfully",
+            color: "success",
+          })
+          navigate(nav.MESSAGE)
+        },
+      },
+    )
+  }
 
   return (
     <div className="m-auto min-h-screen max-w-[1000px] py-10 max-lg:px-10 md:grid md:grid-cols-12 md:place-items-center">
@@ -38,10 +92,10 @@ export default function LogIn() {
       >
         <CardBody className="p-4">
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
+            <form onSubmit={methods.handleSubmit(onSubmit)}>
               <div className="[&>div+div]:pt-3">
                 <Field
-                  name="username"
+                  name="identifier"
                   t="input"
                   size="lg"
                   color="primary"
@@ -56,6 +110,7 @@ export default function LogIn() {
                 size="lg"
                 radius="sm"
                 className="mt-5"
+                isLoading={login.isPending}
               >
                 Log in
               </Button>
@@ -67,7 +122,15 @@ export default function LogIn() {
             </Link>
             <div className="flex items-center">
               <p className="text-sm text-foreground-600">Or log in with</p>
-              <Button isIconOnly aria-label="Google" size="md" variant="light" className="ml-1">
+              <Button
+                isIconOnly
+                aria-label="Google"
+                size="md"
+                variant="light"
+                className="ml-1"
+                isLoading={googleLogin.isPending}
+                onPress={handleGoogleLogin}
+              >
                 <FcGoogle size={24} />
               </Button>
             </div>

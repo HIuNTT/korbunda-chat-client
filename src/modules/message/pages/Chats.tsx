@@ -21,10 +21,10 @@ export default function Chats() {
             </div>
             <div className="flex flex-col">
               <div className="max-w-full">
-                <span className="block truncate break-all text-medium font-bold">Thành Trung</span>
+                <span className="line-clamp-1 break-all text-medium font-bold">Thành Trung</span>
               </div>
               <div>
-                <span className="text-small text-foreground-500">Active now</span>
+                <span className="line-clamp-1 text-small text-foreground-500">Active now</span>
               </div>
             </div>
           </div>

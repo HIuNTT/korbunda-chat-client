@@ -3,10 +3,16 @@ export interface User {
   createdAt: string
   updatedAt: string
   firstName: string
-  surName: string
+  lastName: string
   email: string
-  phone: string
+  phoneNumber: string
+  username: string
   birthday: string
   gender: string
   avatarUrl: string
+}
+
+export interface Tokens {
+  accessToken: string
+  refreshToken: string
 }

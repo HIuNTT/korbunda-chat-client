@@ -1,10 +1,11 @@
 import { Controller, useFormContext } from "react-hook-form"
 
 import Input, { InputProps } from "./Input"
+import InputOtp, { InputOtpProps } from "./InputOtp"
 import Radio, { RadioProps } from "./Radio"
 import Select, { SelectProps } from "./Select"
 
-type FieldProps = { name: string } & (InputProps | SelectProps | RadioProps)
+type FieldProps = { name: string } & (InputProps | SelectProps | RadioProps | InputOtpProps)
 
 export default function Field(props: FieldProps) {
   const { name, t } = props
@@ -18,6 +19,9 @@ export default function Field(props: FieldProps) {
         <>
           {(t === "input" || t === "password") && (
             <Input {...field} {...props} errorMessage={error?.message} isInvalid={invalid} />
+          )}
+          {t === "input-otp" && (
+            <InputOtp {...props} {...field} errorMessage={error?.message} isInvalid={invalid} />
           )}
           {t === "hide-input-error" && <Input {...field} {...props} />}
           {t === "select" && (
